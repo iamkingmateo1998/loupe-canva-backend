@@ -637,10 +637,3 @@ app.get("/api/ai/search", async (req, res) => {
 app.get("/", (_req, res) => res.json({ ok: true, service: "loupe-canva-backend", aiIndexedCount: aiIndex.size }));
 
 app.listen(PORT, () => console.log(`[loupe] backend listening on :${PORT}`));
-
-
-const PORT = process.env.PORT || 8787;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
