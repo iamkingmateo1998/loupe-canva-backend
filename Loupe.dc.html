@@ -158,7 +158,7 @@
           <sc-if value="{{ hasItems }}" hint-placeholder-val="{{ false }}">
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:18px;align-items:start">
               <sc-for list="{{ gridItems }}" as="a" hint-placeholder-count="8">
-                <div onClick="{{ a.on }}" style="background:var(--surface-card);border:1px solid var(--border-default);border-radius:14px;overflow:hidden;cursor:pointer;box-shadow:var(--shadow-sm);transition:box-shadow .2s,transform .2s,border-color .2s" style-hover="box-shadow:var(--shadow-md);transform:translateY(-2px);border-color:var(--border-strong)">
+                <div onClick="{{ a.on }}" onMouseEnter="{{ a.onMouseEnter }}" onMouseLeave="{{ a.onMouseLeave }}" style="background:var(--surface-card);border:1px solid var(--border-default);border-radius:14px;overflow:hidden;cursor:pointer;box-shadow:var(--shadow-sm);transition:box-shadow .2s,transform .2s,border-color .2s" style-hover="box-shadow:var(--shadow-md);transform:translateY(-2px);border-color:var(--border-strong)">
                   <div style="position:relative;aspect-ratio:4 / 3;width:100%;background:var(--bg-sunken);display:grid;place-items:center">
                     <img src="{{ a.thumbnailUrl }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
                     <span style="position:absolute;top:8px;left:8px;font-family:var(--font-mono);font-size:8.5px;letter-spacing:0.1em;padding:3px 7px;border-radius:999px;background:{{ a.sourceBg }};color:{{ a.sourceColor }}">{{ a.sourceShort }}</span>
@@ -242,6 +242,9 @@ class Component extends DCLogic {
       backendUrl: url, backendInput: url, settingsOpen: false,
       profile: null, view: "library", items: [], loading: false, error: "",
       query: "", queryInput: "", filter: "all", selected: null,
+hoverPreviewKey: null,
+hoverPreviewIndex: 0,
+hoverPreviewTimer: null,
     };
   }
 
@@ -315,7 +318,48 @@ class Component extends DCLogic {
   disconnect = () => { const b = this.base(); fetch(b + "/auth/canva/logout", { method: "POST", credentials: "include" }).catch(() => {}); this.setState({ status: "disconnected", items: [], selected: null, view: "library", query: "", queryInput: "" }); };
   reloadCanva = () => { this.setState({ query: "", queryInput: "", filter: "all", view: "library" }, () => this.loadAssets("")); };
   goLibrary = () => this.setState({ view: "library", selected: null });
-  openDetail = (item) => this.setState({ view: "detail", selected: item });
+  openDetail = (item) => {
+  this.stopHoverPreview();
+  this.setState({ view: "detail", selected: item });
+};
+  startHoverPreview = (item) => {
+  const urls = Array.isArray(item.pages) && item.pages.length
+    ? item.pages.map(p => p.thumbnailUrl).filter(Boolean)
+    : [item.thumbnailUrl || ""];
+
+  if (urls.length <= 1) return;
+
+  if (this.state.hoverPreviewTimer) {
+    clearInterval(this.state.hoverPreviewTimer);
+  }
+
+  const key = item.id;
+  const timer = setInterval(() => {
+    this.setState((prev) => ({
+      hoverPreviewIndex: prev.hoverPreviewKey === key
+        ? (prev.hoverPreviewIndex + 1) % urls.length
+        : 0
+    }));
+  }, 750);
+
+  this.setState({
+    hoverPreviewKey: key,
+    hoverPreviewIndex: 0,
+    hoverPreviewTimer: timer
+  });
+};
+
+stopHoverPreview = () => {
+  if (this.state.hoverPreviewTimer) {
+    clearInterval(this.state.hoverPreviewTimer);
+  }
+
+  this.setState({
+    hoverPreviewKey: null,
+    hoverPreviewIndex: 0,
+    hoverPreviewTimer: null
+  });
+};
   setQueryInput = (e) => this.setState({ queryInput: e.target.value });
   onSearchKey = (e) => { if (e.key === "Enter") this.runSearch(this.state.queryInput); };
   runSearchBtn = () => this.runSearch(this.state.queryInput);
@@ -363,9 +407,23 @@ class Component extends DCLogic {
 
     const gridItems = filtered.map((x, i) => {
       const up = x.source === "Upload";
-      return {
-        key: x.id || i, title: x.title || "Untitled",
-        thumbnailUrl: x.thumbnailUrl || "",
+const previewUrls = Array.isArray(x.pages) && x.pages.length
+  ? x.pages.map(p => p.thumbnailUrl).filter(Boolean)
+  : [x.thumbnailUrl || ""];
+
+const isHovering = s.hoverPreviewKey === x.id;
+const previewIndex = isHovering ? s.hoverPreviewIndex % previewUrls.length : 0;
+
+return {
+  key: x.id || i,
+  title: x.title || "Untitled",
+  thumbnailUrl: previewUrls[previewIndex] || x.thumbnailUrl || "",
+  previewUrls,
+  onMouseEnter: () => this.startHoverPreview(x),
+  onMouseLeave: this.stopHoverPreview,
+  previewUrls: Array.isArray(x.pages) && x.pages.length
+  ? x.pages.map(p => p.thumbnailUrl).filter(Boolean)
+  : [x.thumbnailUrl || ""],
         meta: (x.source.toUpperCase() + (x.updatedAt ? (" · UPDATED " + this.fmtDate(x.updatedAt).toUpperCase()) : "")),
         sourceShort: up ? "UPLOAD" : "DESIGN",
         sourceBg: up ? "var(--info-subtle)" : "var(--brand-subtle)",
