@@ -38,7 +38,13 @@ const {
 const AUTHORIZE_URL = "https://www.canva.com/api/oauth/authorize";
 const TOKEN_URL = "https://api.canva.com/rest/v1/oauth/token";
 const API = "https://api.canva.com/rest/v1";
-const SCOPES = ["design:meta:read", "asset:read", "profile:read", "folder:read"];
+const SCOPES = [
+  "design:meta:read",
+  "design:content:read",
+  "asset:read",
+  "profile:read",
+  "folder:read"
+];
 
 const ALLOWED_ORIGINS = (APP_ORIGIN || "http://localhost:3000")
   .split(",").map(s => s.trim()).filter(Boolean);
@@ -202,7 +208,47 @@ async function getAllDesigns(token, query = "") {
     250
   );
 
-  return rawItems.map(mapDesign);
+  const designs = rawItems.map(mapDesign);
+
+  for (const design of designs) {
+    design.pages = await getDesignPages(token, design.id);
+
+    if (!design.pages.length && design.thumbnailUrl) {
+      design.pages = [
+        {
+          id: design.id + "-cover",
+          index: 1,
+          thumbnailUrl: design.thumbnailUrl,
+        },
+      ];
+    }
+  }
+
+  return designs;
+}
+
+async function getDesignPages(token, designId) {
+  try {
+    const data = await canvaGetAllPages(
+      token,
+      `/designs/${encodeURIComponent(designId)}/pages`,
+      {},
+      "items"
+    );
+
+    return data.map((page) => ({
+      id: page.id || page.index,
+      index: page.index,
+      thumbnailUrl:
+        page.thumbnail?.url ||
+        page.thumbnail_url ||
+        page.image?.url ||
+        ""
+    })).filter((p) => p.thumbnailUrl);
+  } catch (e) {
+    console.warn("[loupe] failed to load pages for design", designId, e.message);
+    return [];
+  }
 }
 
 async function getAllAssets(token) {
