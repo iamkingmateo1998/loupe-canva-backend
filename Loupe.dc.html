@@ -160,7 +160,10 @@
               <sc-for list="{{ gridItems }}" as="a" hint-placeholder-count="8">
                 <div onClick="{{ a.on }}" onMouseEnter="{{ a.onMouseEnter }}" onMouseLeave="{{ a.onMouseLeave }}" style="background:var(--surface-card);border:1px solid var(--border-default);border-radius:14px;overflow:hidden;cursor:pointer;box-shadow:var(--shadow-sm);transition:box-shadow .2s,transform .2s,border-color .2s" style-hover="box-shadow:var(--shadow-md);transform:translateY(-2px);border-color:var(--border-strong)">
                   <div style="position:relative;aspect-ratio:4 / 3;width:100%;background:var(--bg-sunken);display:grid;place-items:center">
-                    <img src="{{ a.thumbnailUrl }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+                    <div style="position:relative;width:100%;height:100%;overflow:hidden">
+  <img src="{{ a.prevThumbnailUrl }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transform:translateX({{ a.prevX }});transition:transform 420ms ease">
+  <img src="{{ a.thumbnailUrl }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transform:translateX({{ a.currX }});transition:transform 420ms ease">
+</div>
                     <span style="position:absolute;top:8px;left:8px;font-family:var(--font-mono);font-size:8.5px;letter-spacing:0.1em;padding:3px 7px;border-radius:999px;background:{{ a.sourceBg }};color:{{ a.sourceColor }}">{{ a.sourceShort }}</span>
                   </div>
                   <div style="padding:13px 15px 15px">
@@ -340,7 +343,7 @@ hoverPreviewTimer: null,
         ? (prev.hoverPreviewIndex + 1) % urls.length
         : 0
     }));
-  }, 750);
+  }, 1100);
 
   this.setState({
     hoverPreviewKey: key,
@@ -414,10 +417,17 @@ const previewUrls = Array.isArray(x.pages) && x.pages.length
 const isHovering = s.hoverPreviewKey === x.id;
 const previewIndex = isHovering ? s.hoverPreviewIndex % previewUrls.length : 0;
 
+const prevIndex = isHovering
+  ? (previewIndex - 1 + previewUrls.length) % previewUrls.length
+  : previewIndex;
+
 return {
   key: x.id || i,
   title: x.title || "Untitled",
   thumbnailUrl: previewUrls[previewIndex] || x.thumbnailUrl || "",
+  prevThumbnailUrl: previewUrls[prevIndex] || x.thumbnailUrl || "",
+  prevX: isHovering ? "-100%" : "0%",
+  currX: "0%",
   previewUrls,
   onMouseEnter: () => this.startHoverPreview(x),
   onMouseLeave: this.stopHoverPreview,
