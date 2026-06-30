@@ -48,6 +48,7 @@ if (!CANVA_CLIENT_ID || !CANVA_CLIENT_SECRET || !CANVA_REDIRECT_URI) {
 }
 
 const app = express();
+app.use(express.static(process.cwd()));
 app.set("trust proxy", 1);
 
 app.use(cors({
@@ -635,5 +636,9 @@ app.get("/api/ai/search", async (req, res) => {
 });
 
 app.get("/", (_req, res) => res.json({ ok: true, service: "loupe-canva-backend", aiIndexedCount: aiIndex.size }));
+
+app.get("/", (req, res) => {
+  res.redirect("/Loupe.dc.html");
+});
 
 app.listen(PORT, () => console.log(`[loupe] backend listening on :${PORT}`));
