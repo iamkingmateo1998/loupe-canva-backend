@@ -1,0 +1,68 @@
+/* ============================================================
+   Brief — Typography tokens
+   Serif display (Newsreader) + sans body (Hanken Grotesk)
+   + mono structure (IBM Plex Mono).
+   ============================================================ */
+
+:root {
+  /* ---- Families ------------------------------------------- */
+  --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-sans:  "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:  "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* ---- Type scale (1.25 major-third-ish, editorial) ------- */
+  --text-2xs: 11px;
+  --text-xs:  12px;
+  --text-sm:  13px;
+  --text-base: 15px;   /* default UI body */
+  --text-md:  17px;    /* editorial reading body */
+  --text-lg:  20px;
+  --text-xl:  24px;
+  --text-2xl: 30px;
+  --text-3xl: 38px;
+  --text-4xl: 48px;
+  --text-5xl: 60px;
+  --text-6xl: 76px;
+
+  /* ---- Weights -------------------------------------------- */
+  --weight-light:    300;
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* ---- Line heights --------------------------------------- */
+  --leading-tight:   1.1;
+  --leading-snug:    1.25;
+  --leading-normal:  1.45;
+  --leading-relaxed: 1.65;
+
+  /* ---- Letter spacing ------------------------------------- */
+  --tracking-tight:  -0.02em;
+  --tracking-snug:   -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.02em;
+  --tracking-caps:   0.08em; /* mono eyebrow labels */
+
+  /* ---- Semantic text roles -------------------------------- */
+  /* Display: serif, tight, for hero + section heads */
+  --display-font:    var(--font-serif);
+  --display-weight:  var(--weight-medium);
+  --display-leading: var(--leading-tight);
+  --display-tracking: var(--tracking-tight);
+
+  /* Headings: serif */
+  --heading-font:    var(--font-serif);
+  --heading-weight:  var(--weight-medium);
+
+  /* Body: sans */
+  --body-font:    var(--font-sans);
+  --body-weight:  var(--weight-regular);
+  --body-leading: var(--leading-normal);
+
+  /* Eyebrow / label: mono, uppercase, tracked */
+  --label-font:     var(--font-mono);
+  --label-weight:   var(--weight-medium);
+  --label-size:     var(--text-xs);
+  --label-tracking: var(--tracking-caps);
+}

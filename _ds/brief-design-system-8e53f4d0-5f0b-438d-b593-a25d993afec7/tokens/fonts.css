@@ -1,0 +1,9 @@
+/* ============================================================
+   Brief — Webfonts
+   Loaded from Google Fonts (see readme caveat: not self-hosted).
+   Newsreader  — serif display / editorial accents
+   Hanken Grotesk — UI + body sans
+   IBM Plex Mono — labels, metadata, structure
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..600&family=Hanken+Grotesk:wght@400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
